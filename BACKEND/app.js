@@ -1,4 +1,4 @@
-import express from "express";
+ import express from "express";
 import {nanoid} from "nanoid"
 import dotenv from "dotenv"
 import connectDB from "./src/config/monogo.config.js"
@@ -15,9 +15,22 @@ dotenv.config("./.env")
 
 const app = express();
 
+// ✅ Live Vercel App aur Localhost dono allow karein
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  process.env.FRONTEND_URL // Deployment ke baad Vercel Link yahan se load hoga
+];
+
 app.use(cors({
-    origin: 'http://localhost:5173', // your React app
-    credentials: true // 👈 this allows cookies to be sent
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true // Cookies allow karne ke liye
 }));
 
 app.use(express.json())
@@ -33,9 +46,10 @@ app.get("/:id",redirectFromShortUrl)
 
 app.use(errorHandler)
 
-app.listen(3000,()=>{
-    connectDB()
-    console.log("Server is running on http://localhost:3000");
-})
+// ✅ Port Dynamic Rakhein Render Deployment Ke Liye
+const PORT = process.env.PORT || 3000;
 
-// GET - Redirection 
+app.listen(PORT, ()=>{
+    connectDB();
+    console.log(`Server is running on port ${PORT}`);
+});
