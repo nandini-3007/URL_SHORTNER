@@ -1,9 +1,12 @@
-import axios from "axios"
+ import axios from "axios"
+
+// Environment variable se URL uthayega, local par run karne par localhost fallback rahega
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 const axiosInstance = axios.create({
-    baseURL:"http://localhost:3000",
-    timeout:10000, //10s
-    withCredentials:true
+    baseURL: API_BASE_URL,
+    timeout: 10000, // 10s
+    withCredentials: true
 })
 
 // Response interceptor
@@ -24,7 +27,6 @@ axiosInstance.interceptors.response.use(
                     break;
                 case 401:
                     console.error("Unauthorized:", data);
-                    // You could redirect to login page or refresh token here
                     break;
                 case 403:
                     console.error("Forbidden:", data);
@@ -46,14 +48,12 @@ axiosInstance.interceptors.response.use(
             console.error("Error:", error.message);
         }
 
-        // You can customize the error object before rejecting
         return Promise.reject({
-            // isAxiosError: true,
             message: error.response?.data?.message || error.message || "Unknown error occurred",
             status: error.response?.status,
             data: error.response?.data,
-            // originalError: error
         });
     }
 );
+
 export default axiosInstance
